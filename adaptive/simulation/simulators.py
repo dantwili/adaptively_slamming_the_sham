@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import warnings
 import numpy as np
 import pandas as pd
 from typing import Callable
@@ -59,6 +60,10 @@ class StaticExperimentSimulator(ExperimentSimulator):
                 f"All entries of p must lie in [0, 1]. "
                 f"Found p.min()={np.min(p)}, p.max()={np.max(p)}"
             )
+        if np.any(n < 2):
+            raise ValueError(
+                f"All entries of n must be at least 2. " f"Found n.min()={np.min(n)}"
+            )
         super().__init__(
             mu_b, mu_theta, sigma_b, sigma_theta, sigma1, sigma0, identifier
         )
@@ -69,6 +74,18 @@ class StaticExperimentSimulator(ExperimentSimulator):
         """Simulate a batch of experiments."""
         n1 = np.floor(self.p * self.n).astype(int)
         n0 = self.n - n1
+
+        if n1.min() < 1:
+            warnings.warn(
+                "Some n1 values are less than 1; resetting to 1 to avoid division by zero."
+            )
+            n1 = np.maximum(1, n1)  # Ensure n1 is at least 1 to avoid division by zero
+        if n0.min() < 1:
+            warnings.warn(
+                "Some n0 values are less than 1; resetting to 1 to avoid division by zero."
+            )
+            n0 = np.maximum(1, n0)  # Ensure n0 is at least 1 to avoid division by zero
+
         sigma_y1_bar = self.sigma1 / np.sqrt(n1)
         sigma_y0_bar = self.sigma0 / np.sqrt(n0)
         theta = np.random.normal(self.mu_theta, self.sigma_theta, len(self.n))

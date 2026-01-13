@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import copy
 import pandas as pd
 import numpy as np
 from scipy import stats
@@ -8,6 +9,11 @@ from scipy import stats
 class ExperimentResult:
     data: pd.DataFrame
     params: dict
+
+    def merge(self, other):
+        assert self.params == other.params
+        concat = pd.concat([self.data, other.data], ignore_index=True)
+        return ExperimentResult(concat, self.params)
 
 
 @dataclass
@@ -46,6 +52,9 @@ class EstimatorResult:
                 "rank_corr": [self.rank_corr()],
             }
         )
+
+    def sample_mae(self) -> float:
+        return np.mean(np.abs(self.samp_err))
 
     def pop_rmse(self) -> float:
         """Calculate the population RMSE."""

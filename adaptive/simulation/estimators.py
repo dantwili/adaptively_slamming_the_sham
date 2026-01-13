@@ -4,7 +4,7 @@ import pandas as pd
 from scipy import stats
 
 from .results import ExperimentResult, EstimatorResult
-from .fitters import StanFitter
+from .fitters import Fitter
 
 
 class Estimator(ABC):
@@ -60,7 +60,7 @@ class DifferenceEstimator(Estimator):
 
 
 class PosteriorMeanEstimator(Estimator):
-    def __init__(self, fitter: StanFitter):
+    def __init__(self, fitter: Fitter):
         super().__init__()
         self.fitter = fitter
         self.name = "Posterior Mean"

@@ -29,7 +29,16 @@ CHICK_SIMULATOR = StaticExperimentSimulator(
     identifier={"name": "chick_simulator"},
 )
 
-0
+
+def p_star(sigma0: float, sigma1: float, sigma_b: float, n: int) -> float:
+    """
+    Calculate the p* value for the given experiment.
+    """
+    numer = 1 + sigma0**2 / (n * sigma_b**2)
+    denom = 1 + sigma0 / sigma1
+    p_star = min(1, numer / denom)
+
+    return p_star
 
 
 def next_p_star(expt: ExperimentResult | None, n: int, oracle: bool = False) -> float:
@@ -45,16 +54,16 @@ def next_p_star(expt: ExperimentResult | None, n: int, oracle: bool = False) -> 
     if oracle:
         sigma_b = expt.params["sigma_b"]
     else:
-        sigma_b = sigma_b_hat(expt)
+        sigma_b = sigma_b_mom(expt)
 
     numer = 1 + sigma0**2 / (n * sigma_b**2)
     denom = 1 + sigma0 / sigma1
     p_star = numer / denom
 
-    return min(0.95, p_star)
+    return min(1, p_star)
 
 
-def sigma_b_hat(expt: ExperimentResult) -> float:
+def sigma_b_mom(expt: ExperimentResult) -> float:
     y1 = expt.data["y1_bar"]
     y0 = expt.data["y0_bar"]
     J = len(expt.data)
@@ -131,4 +140,3 @@ def save_simulation(results, data_dir, prefix):
         pickle.dump(results, f)
 
     print(f"Saved simulation to {full_path}")
-    return full_path
